@@ -20,9 +20,17 @@ namespace Faster
     /// </summary>
     public partial class MainWindow : Window
     {
+
         public MainWindow()
         {
             InitializeComponent();
+            WinMonitor.SetUIDispatcher(this.Dispatcher);
+            WinMonitor.GetInstance().WPMChanged += WPMChangedHandler;
+        }
+
+        private void WPMChangedHandler(object sender, WPMArgs e)
+        {
+            TxtWPM.Text = e.WPM.ToString();
         }
     }
 }
