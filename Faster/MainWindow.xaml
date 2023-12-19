@@ -3,10 +3,25 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:gif="http://wpfanimatedgif.codeplex.com"
+        gif:ImageBehavior.AnimateInDesignMode="True"
         xmlns:local="clr-namespace:Faster"
         mc:Ignorable="d"
-        Title="MainWindow" Height="50" Width="100"
+        Title="MainWindow" Height="30" Width="135"
+        Background="Transparent"
+        AllowsTransparency="True"
         WindowStyle="None"
+        ShowInTaskbar="False"
         Topmost="True">
-    <TextBlock x:Name="TxtWPM"/>
+    <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
+        <Image x:Name ="ImgMid" gif:ImageBehavior.AnimatedSource="Mid.gif"/>
+        <Image x:Name ="ImgFire" gif:ImageBehavior.AnimatedSource="Fire.gif"/>
+        <Image x:Name ="ImgLow" gif:ImageBehavior.AnimatedSource="John.gif"/>
+        <Image x:Name ="ImgDelete" gif:ImageBehavior.AnimatedSource="Delete.gif"/>
+        <TextBlock x:Name="TxtWPM" Text="100" Foreground="White" FontSize="20" Width="60">
+            <TextBlock.Effect>
+                <DropShadowEffect Color="Black" Direction="320" ShadowDepth="3" BlurRadius="10"/>
+            </TextBlock.Effect>
+        </TextBlock>
+    </StackPanel>
 </Window>
