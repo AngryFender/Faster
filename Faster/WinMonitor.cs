@@ -16,8 +16,11 @@ namespace Faster
         private static System.Timers.Timer _visibilityTimer;
         private static int _countKeys;
         private readonly int WH_KEYBOARD_LL = 13;
+        private const int WM_KEYUP = 0x0101;
         private const int WM_KEYDOWN = 0x0100;
         private const int VK_DELETE = 0x08;
+        private const int VK_UP = 0x26;
+        private const int VK_DOWN = 0x28;
         private bool _isBackSpacePressed = false;
         private static Dispatcher _uiDispatcher;
         private static IntPtr _currentHWnd;
@@ -180,25 +183,37 @@ namespace Faster
 
         private IntPtr HandleKeyboardEvent(int nCode, IntPtr wParam, IntPtr lParam)
         {
-            if ( nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN)
+            if ( nCode >= 0 )
             {
                 int vkCode = Marshal.ReadInt32(lParam);
-                if (vkCode == VK_DELETE)
-                {
-                    RaiseBackKeyPressed(true);
-                    _isBackSpacePressed = true;
-                }
-                else
-                {
-                    RaiseBackKeyPressed(false);
 
-                    if (!_timer.Enabled)
+                if (wParam == (IntPtr)WM_KEYUP)
+                {
+                    if (vkCode == VK_UP || vkCode == VK_DOWN)
                     {
-                        _timer.Start();
+                        GetCaretPosition();
                     }
-                    Interlocked.Increment(ref _countKeys);
                 }
-                GetCaretPosition();
+
+                else if (wParam == (IntPtr)WM_KEYDOWN)
+                {
+                    if (vkCode == VK_DELETE)
+                    {
+                        RaiseBackKeyPressed(true);
+                        _isBackSpacePressed = true;
+                    }
+                    else
+                    {
+                        RaiseBackKeyPressed(false);
+
+                        if (!_timer.Enabled)
+                        {
+                            _timer.Start();
+                        }
+                        Interlocked.Increment(ref _countKeys);
+                    }
+                    GetCaretPosition();
+                }
             }
             return CallNextHookEx(_keyboardEventHook, nCode, wParam, lParam);
         }
@@ -215,7 +230,7 @@ namespace Faster
         public void SetCurrentHWnd(IntPtr hWnd)
         {
             _currentHWnd = hWnd;
-            GetWindowRect(hWnd, out _currentRect );
+            GetWindowRect(hWnd, out _currentRect);
         }
 
         public void SetUIDispatcher(Dispatcher ui)
@@ -227,12 +242,12 @@ namespace Faster
         {
             IntPtr hWnd = GetForegroundWindow();
 
-            if(hWnd == _currentHWnd)
+            if (hWnd == _currentHWnd)
             {
                 return;
             }
 
-            if (null != hWnd )
+            if (null != hWnd)
             {
                 GUITHREADINFO guiInfo = new GUITHREADINFO();
                 guiInfo.cbSize = Marshal.SizeOf(guiInfo);
@@ -245,18 +260,18 @@ namespace Faster
                 };
                 if (0 != pos.x && 0 != pos.y)
                 {
-                    ClientToScreen(hWnd,ref pos);
-                    MoveWindow(_currentHWnd,(int) pos.x+80
+                    ClientToScreen(hWnd, ref pos);
+                    MoveWindow(_currentHWnd, (int)pos.x + 80
                                , (int)pos.y - 15
                                , _currentRect.right - _currentRect.left
                                , _currentRect.bottom - _currentRect.top
                                , true);
                 }
                 else
-                { 
-                    GetWindowRect(hWnd, out WinRect winRect );
-                    MoveWindow(_currentHWnd, winRect.right-100
-                               , winRect.bottom-50
+                {
+                    GetWindowRect(hWnd, out WinRect winRect);
+                    MoveWindow(_currentHWnd, winRect.right - 100
+                               , winRect.bottom - 50
                                , _currentRect.right - _currentRect.left
                                , _currentRect.bottom - _currentRect.top
                                , true);
@@ -271,7 +286,7 @@ namespace Faster
         }
     }
 
-    public class WPMArgs: EventArgs
+    public class WPMArgs : EventArgs
     {
         public double WPM { get; }
 
