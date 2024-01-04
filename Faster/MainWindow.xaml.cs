@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -27,37 +28,50 @@ namespace Faster
     {
         private NotifyIcon _notifyIcon;
         private Queue<double> _wpms = new Queue<double>();
+        private readonly Mutex _mutex;
         public MainWindow()
         {
-            InitializeComponent();
-            
-            this._notifyIcon = new NotifyIcon
-            {
-                BalloonTipText = "Faster is minimized to tray",
-                BalloonTipTitle = "Faster",
-                Text = "Faster",
-                Icon = Properties.Resources.Faster,
-                Visible = true
-            };
+            bool isNewMap = true;
+            _mutex = new Mutex(true, "Faster", out isNewMap);
 
-            ContextMenu trayMenu = new ContextMenu();
-            trayMenu.MenuItems.Add("Exit", (s, e) => CloseApplication());
-            _notifyIcon.ContextMenu = trayMenu;
-            this.Loaded += (sender, e) =>
+
+            if (!isNewMap)
             {
-                WindowInteropHelper helper = new WindowInteropHelper(this);
-                IntPtr hwnd = helper.Handle;
-                WinMonitor.GetInstance().WPMChanged += WPMChangedHandler;
-                WinMonitor.GetInstance().HideWPM += HideWPMHandler;
-                WinMonitor.GetInstance().BackSpaceKeyPressed += DeleteKeyPressedHandler;
-                WinMonitor.GetInstance().SetCurrentHWnd(hwnd);
-                WinMonitor.GetInstance().SetUIDispatcher(this.Dispatcher);
-            };
-            TxtWPM.Visibility = Visibility.Collapsed;
-            ImgLow.Visibility = Visibility.Collapsed;
-            ImgMid.Visibility = Visibility.Collapsed;
-            ImgFire.Visibility = Visibility.Collapsed;
-            ImgDelete.Visibility = Visibility.Collapsed;
+                System.Windows.MessageBox.Show("Faster already running", "Multiple Instances", MessageBoxButton.OK, MessageBoxImage.Error);
+                this.CloseApplication();
+            }
+            else
+            {
+                InitializeComponent();
+
+                this._notifyIcon = new NotifyIcon
+                {
+                    BalloonTipText = "Faster is minimized to tray",
+                    BalloonTipTitle = "Faster",
+                    Text = "Faster",
+                    Icon = Properties.Resources.Faster,
+                    Visible = true
+                };
+
+                ContextMenu trayMenu = new ContextMenu();
+                trayMenu.MenuItems.Add("Exit", (s, e) => CloseApplication());
+                _notifyIcon.ContextMenu = trayMenu;
+                this.Loaded += (sender, e) =>
+                {
+                    WindowInteropHelper helper = new WindowInteropHelper(this);
+                    IntPtr hwnd = helper.Handle;
+                    WinMonitor.GetInstance().WPMChanged += WPMChangedHandler;
+                    WinMonitor.GetInstance().HideWPM += HideWPMHandler;
+                    WinMonitor.GetInstance().BackSpaceKeyPressed += DeleteKeyPressedHandler;
+                    WinMonitor.GetInstance().SetCurrentHWnd(hwnd);
+                    WinMonitor.GetInstance().SetUIDispatcher(this.Dispatcher);
+                };
+                TxtWPM.Visibility = Visibility.Collapsed;
+                ImgLow.Visibility = Visibility.Collapsed;
+                ImgMid.Visibility = Visibility.Collapsed;
+                ImgFire.Visibility = Visibility.Collapsed;
+                ImgDelete.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void DeleteKeyPressedHandler(object sender, bool e)

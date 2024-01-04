@@ -7,7 +7,7 @@
         gif:ImageBehavior.AnimateInDesignMode="True"
         xmlns:local="clr-namespace:Faster"
         mc:Ignorable="d"
-        Title="MainWindow" Height="30" Width="135"
+        Title="Faster" Height="30" Width="135"
         Background="Transparent"
         AllowsTransparency="True"
         WindowStyle="None"
